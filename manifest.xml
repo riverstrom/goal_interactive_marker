@@ -1,0 +1,21 @@
+<package>
+  <description brief="goal_interactive_marker">
+
+     Interactive marker for setting robot goals in 3D.
+
+  </description>
+  <author> Daniel Perea Strom</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/goal_interactive_marker</url>
+  <depend package="roscpp"/>
+  <depend package="visualization_msgs"/>
+  <depend package="interactive_markers"/>
+
+  <platform os="ubuntu" version="9.04"/>
+  <platform os="ubuntu" version="9.10"/>
+  <platform os="ubuntu" version="10.04"/>
+  <platform os="ubuntu" version="12.04"/>
+</package>
+
+
