@@ -27,71 +27,151 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 // %Tag(fullSource)%
 #include <ros/ros.h>
 
 #include <interactive_markers/interactive_marker_server.h>
+#include <geometry_msgs/PoseStamped.h>
 
-void processFeedback(
-    const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
+using namespace visualization_msgs;
+
+ros::Publisher pub;
+ros::Publisher pub2;
+
+void processFeedback2(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
 {
-  ROS_INFO_STREAM( feedback->marker_name << " is now at "
-      << feedback->pose.position.x << ", " << feedback->pose.position.y
-      << ", " << feedback->pose.position.z );
+  ROS_INFO_STREAM(
+      feedback->marker_name << " is now at " << feedback->pose.position.x << ", " << feedback->pose.position.y << ", "
+          << feedback->pose.position.z);
+  geometry_msgs::PoseStamped msg;
+  msg.header.stamp = ros::Time::now();
+  msg.pose.position.x = feedback->pose.position.x;
+  msg.pose.position.y = feedback->pose.position.y;
+  msg.pose.position.z = feedback->pose.position.z;
+
+    pub2.publish(msg);
 }
+
+
+void processFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
+{
+  ROS_INFO_STREAM(
+      feedback->marker_name << " is now at " << feedback->pose.position.x << ", " << feedback->pose.position.y << ", "
+          << feedback->pose.position.z);
+  geometry_msgs::PoseStamped msg;
+  msg.header.stamp = ros::Time::now();
+  msg.pose.position.x = feedback->pose.position.x;
+  msg.pose.position.y = feedback->pose.position.y;
+  msg.pose.position.z = feedback->pose.position.z;
+
+    pub.publish(msg);
+}
+
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "simple_marker");
+ros::init(argc, argv, "goal_interactive_marker");
 
-  // create an interactive marker server on the topic namespace simple_marker
-  interactive_markers::InteractiveMarkerServer server("simple_marker");
+ros::NodeHandle nh;
 
-  // create an interactive marker for our server
-  visualization_msgs::InteractiveMarker int_marker;
-  int_marker.header.frame_id = "/base_link";
-  int_marker.name = "goal";
-  int_marker.description = "Set goal pose";
+pub = nh.advertise<geometry_msgs::PoseStamped>("/goal_pose", 5);
+pub2 = nh.advertise<geometry_msgs::PoseStamped>("/currentPos", 5);
 
-  // create a grey box marker
-  visualization_msgs::Marker box_marker;
-  box_marker.type = visualization_msgs::Marker::CUBE;
-  box_marker.scale.x = 0.45;
-  box_marker.scale.y = 0.45;
-  box_marker.scale.z = 0.45;
-  box_marker.color.r = 0.5;
-  box_marker.color.g = 0.5;
-  box_marker.color.b = 0.5;
-  box_marker.color.a = 1.0;
+// create an interactive marker server on the topic namespace goal_interactive_marker
+interactive_markers::InteractiveMarkerServer server("goal_interactive_marker");
 
-  // create a non-interactive control which contains the box
-  visualization_msgs::InteractiveMarkerControl box_control;
-  box_control.always_visible = true;
-  box_control.markers.push_back( box_marker );
+// create an interactive marker for our server
+InteractiveMarker int_marker;
+int_marker.header.frame_id = "/map";
+int_marker.name = "goal";
+int_marker.description = "Set goal pose";
+int_marker.pose.position.x = -0.247502833605;
+int_marker.pose.position.y = 1.58877837658;
+int_marker.pose.position.z = 1.11516749859;
 
-  // add the control to the interactive marker
-  int_marker.controls.push_back( box_control );
+// create a grey box marker
+Marker box_marker;
+box_marker.type = visualization_msgs::Marker::CUBE;
+box_marker.scale.x = 0.05;
+box_marker.scale.y = 0.05;
+box_marker.scale.z = 0.05;
+box_marker.color.r = 0.5;
+box_marker.color.g = 0.5;
+box_marker.color.b = 0.5;
+box_marker.color.a = 1.0;
 
-  // create a control which will move the box
-  // this control does not contain any markers,
-  // which will cause RViz to insert two arrows
-  visualization_msgs::InteractiveMarkerControl rotate_control;
-  rotate_control.name = "move_x";
-  rotate_control.interaction_mode =
-      visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
+InteractiveMarkerControl box_control;
+box_control.always_visible = true;
+box_control.markers.push_back(box_marker);
+int_marker.controls.push_back(box_control);
 
-  // add the control to the interactive marker
-  int_marker.controls.push_back(rotate_control);
+InteractiveMarkerControl control;
 
-  // add the interactive marker to our collection &
-  // tell the server to call processFeedback() when feedback arrives for it
-  server.insert(int_marker, &processFeedback);
+control.orientation.w = 1;
+control.orientation.x = 0;
+control.orientation.y = 1;
+control.orientation.z = 0;
+control.interaction_mode = InteractiveMarkerControl::MOVE_ROTATE;
+int_marker.controls.push_back(control);
+control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
+int_marker.controls.push_back(control);
 
-  // 'commit' changes and send to all clients
-  server.applyChanges();
+server.insert(int_marker);
+server.setCallback(int_marker.name, &processFeedback);
 
-  // start the ROS main loop
-  ros::spin();
+// 'commit' changes and send to all clients
+server.applyChanges();
+
+// Current postion marker
+
+// create an interactive marker for our server
+InteractiveMarker int_marker2;
+int_marker2.header.frame_id = "/map";
+int_marker2.name = "start";
+int_marker2.description = "Set current start pose";
+int_marker2.pose.position.x = 0.353916078806;
+int_marker2.pose.position.y = 1.54532015324;
+int_marker2.pose.position.z = 0.274018585682;
+
+// create a grey box marker
+Marker box_marker2;
+box_marker2.type = visualization_msgs::Marker::CUBE;
+box_marker2.scale.x = 0.05;
+box_marker2.scale.y = 0.05;
+box_marker2.scale.z = 0.05;
+box_marker2.color.r = 0.5;
+box_marker2.color.g = 0.5;
+box_marker2.color.b = 0.5;
+box_marker2.color.a = 1.0;
+
+InteractiveMarkerControl box_control2;
+box_control2.always_visible = true;
+box_control2.markers.push_back(box_marker2);
+int_marker2.controls.push_back(box_control2);
+
+InteractiveMarkerControl control2;
+
+control2.orientation.w = 1;
+control2.orientation.x = 0;
+control2.orientation.y = 1;
+control2.orientation.z = 0;
+control2.interaction_mode = InteractiveMarkerControl::MOVE_ROTATE;
+int_marker2.controls.push_back(control2);
+control2.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
+int_marker2.controls.push_back(control2);
+
+server.insert(int_marker2);
+server.setCallback(int_marker2.name, &processFeedback2);
+
+// 'commit' changes and send to all clients
+server.applyChanges();
+
+
+
+
+
+
+// start the ROS main loop
+ros::spin();
 }
 // %Tag(fullSource)%
