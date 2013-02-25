@@ -49,7 +49,7 @@ void processFeedback2(const visualization_msgs::InteractiveMarkerFeedbackConstPt
   msg.pose.position.y = feedback->pose.position.y;
   msg.pose.position.z = feedback->pose.position.z;
 
-    pub2.publish(msg);
+  pub2.publish(msg);
 }
 
 
@@ -72,10 +72,23 @@ int main(int argc, char** argv)
 {
 ros::init(argc, argv, "goal_interactive_marker");
 
-ros::NodeHandle nh;
+ros::NodeHandle nh("~");
+double goal_init_pose_x_;
+double goal_init_pose_y_;
+double goal_init_pose_z_;
+nh.param("goal_init_pose_x", goal_init_pose_x_, 0.0);
+nh.param("goal_init_pose_y", goal_init_pose_y_, 0.0);
+nh.param("goal_init_pose_z", goal_init_pose_z_, 0.0);
+
+double start_init_pose_x_;
+double start_init_pose_y_;
+double start_init_pose_z_;
+nh.param("start_init_pose_x", start_init_pose_x_, 0.0);
+nh.param("start_init_pose_y", start_init_pose_y_, 0.0);
+nh.param("start_init_pose_z", start_init_pose_z_, 0.0);
 
 pub = nh.advertise<geometry_msgs::PoseStamped>("/goal_pose", 5);
-pub2 = nh.advertise<geometry_msgs::PoseStamped>("/currentPos", 5);
+pub2 = nh.advertise<geometry_msgs::PoseStamped>("/currentPos", 5, true);
 
 // create an interactive marker server on the topic namespace goal_interactive_marker
 interactive_markers::InteractiveMarkerServer server("goal_interactive_marker");
@@ -85,9 +98,9 @@ InteractiveMarker int_marker;
 int_marker.header.frame_id = "/map";
 int_marker.name = "goal";
 int_marker.description = "Set goal pose";
-int_marker.pose.position.x = -0.247502833605;
-int_marker.pose.position.y = 1.58877837658;
-int_marker.pose.position.z = 1.11516749859;
+int_marker.pose.position.x = goal_init_pose_x_;
+int_marker.pose.position.y = goal_init_pose_y_;
+int_marker.pose.position.z = goal_init_pose_z_;
 
 // create a grey box marker
 Marker box_marker;
@@ -125,13 +138,15 @@ server.applyChanges();
 // Current postion marker
 
 // create an interactive marker for our server
+// start is now at 5.66191, -1.07912, 0.468205
+
 InteractiveMarker int_marker2;
 int_marker2.header.frame_id = "/map";
 int_marker2.name = "start";
 int_marker2.description = "Set current start pose";
-int_marker2.pose.position.x = 0.353916078806;
-int_marker2.pose.position.y = 1.54532015324;
-int_marker2.pose.position.z = 0.274018585682;
+int_marker2.pose.position.x = start_init_pose_x_;
+int_marker2.pose.position.y = start_init_pose_y_;
+int_marker2.pose.position.z = start_init_pose_z_;
 
 // create a grey box marker
 Marker box_marker2;
@@ -166,8 +181,14 @@ server.setCallback(int_marker2.name, &processFeedback2);
 // 'commit' changes and send to all clients
 server.applyChanges();
 
+// Publishing ONLY inital start pose (so it is available for other nodes to use)
+geometry_msgs::PoseStamped msg;
+msg.header.stamp = ros::Time::now();
+msg.pose.position.x = start_init_pose_x_;
+msg.pose.position.y = start_init_pose_y_;
+msg.pose.position.z = start_init_pose_z_;
 
-
+pub2.publish(msg);
 
 
 
