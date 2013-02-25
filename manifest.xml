@@ -1,7 +1,7 @@
 <package>
   <description brief="goal_interactive_marker">
 
-     Interactive markers for setting robot goals in 3D.
+     Interactive markers for setting robot goals in 4D (3D + yaw).
 
   </description>
   <author> Daniel Perea Strom</author>
