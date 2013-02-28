@@ -49,6 +49,11 @@ void processFeedback2(const visualization_msgs::InteractiveMarkerFeedbackConstPt
   msg.pose.position.y = feedback->pose.position.y;
   msg.pose.position.z = feedback->pose.position.z;
 
+  msg.pose.orientation.x = feedback->pose.orientation.x;
+  msg.pose.orientation.y = feedback->pose.orientation.y;
+  msg.pose.orientation.z = feedback->pose.orientation.z;
+  msg.pose.orientation.w = feedback->pose.orientation.w;
+
   pub2.publish(msg);
 }
 
@@ -64,7 +69,12 @@ void processFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr
   msg.pose.position.y = feedback->pose.position.y;
   msg.pose.position.z = feedback->pose.position.z;
 
-    pub.publish(msg);
+  msg.pose.orientation.x = feedback->pose.orientation.x;
+  msg.pose.orientation.y = feedback->pose.orientation.y;
+  msg.pose.orientation.z = feedback->pose.orientation.z;
+  msg.pose.orientation.w = feedback->pose.orientation.w;
+
+  pub.publish(msg);
 }
 
 
